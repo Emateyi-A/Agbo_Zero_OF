@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ZOF Solver - Web GUI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>ZOF Solver - Find Roots of Equations</h1>
+
+        <form method="POST">
+            <label for="equation">Enter equation f(x):</label>
+            <input type="text" id="equation" name="equation" placeholder="e.g. x**3 - x - 2" required>
+
+            <label for="method">Select Method:</label>
+            <select id="method" name="method" onchange="showParams()" required>
+                <option value="">--Choose Method--</option>
+                <option value="bisection">Bisection</option>
+                <option value="regula_falsi">Regula Falsi</option>
+                <option value="secant">Secant</option>
+                <option value="newton_raphson">Newton-Raphson</option>
+                <option value="fixed_point">Fixed Point</option>
+                <option value="modified_secant">Modified Secant</option>
+            </select>
+
+            <div id="params"></div>
+
+            <label for="tol">Tolerance:</label>
+            <input type="number" step="any" name="tol" required value="0.0001">
+
+            <label for="max_iter">Maximum Iterations:</label>
+            <input type="number" name="max_iter" required value="50">
+
+            <button type="submit">Compute Root</button>
+        </form>
+
+        {% if result %}
+        <div class="result">
+            <h2>Result</h2>
+            <p><strong>Root:</strong> {{ result.root }}</p>
+            <p><strong>Estimated Error:</strong> {{ result.error }}</p>
+            <p><strong>Iterations:</strong> {{ result.iterations }}</p>
+        </div>
+
+        <div class="table-container">
+            <h3>Iteration Table</h3>
+            <table>
+                <tr>
+                    {% for key in table[0].keys() %}
+                    <th>{{ key }}</th>
+                    {% endfor %}
+                </tr>
+                {% for row in table %}
+                <tr>
+                    {% for key, val in row.items() %}
+                    <td>{{ val }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        function showParams() {
+            const method = document.getElementById('method').value;
+            const paramsDiv = document.getElementById('params');
+            let html = '';
+
+            if(method === 'bisection' || method === 'regula_falsi') {
+                html += '<label>a:</label><input type="number" step="any" name="a" required>';
+                html += '<label>b:</label><input type="number" step="any" name="b" required>';
+            } else if(method === 'secant') {
+                html += '<label>x0:</label><input type="number" step="any" name="x0" required>';
+                html += '<label>x1:</label><input type="number" step="any" name="x1" required>';
+            } else if(method === 'newton_raphson' || method === 'fixed_point' || method === 'modified_secant') {
+                html += '<label>x0:</label><input type="number" step="any" name="x0" required>';
+                if(method === 'fixed_point') {
+                    html += '<label>g(x) for Fixed Point:</label><input type="text" name="g_expr" placeholder="e.g. (x**3 - 2)/3">';
+                }
+                if(method === 'modified_secant') {
+                    html += '<label>Delta:</label><input type="number" step="any" name="delta" value="0.01">';
+                }
+            }
+            paramsDiv.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
